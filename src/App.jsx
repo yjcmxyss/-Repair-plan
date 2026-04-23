@@ -485,11 +485,11 @@ function OrbitalNav({ onNavigate }) {
   const orbitRef = useRef();
   const [hoveredId, setHoveredId] = useState(null);
 
-  const NAV_ITEMS = [
-    { id: 'eco', label: '生态交互', targetY: window.innerHeight },
-    { id: 'news', label: '新闻资讯', targetY: window.innerHeight * 2 },
-    { id: 'forum', label: '论坛', targetY: window.innerHeight * 3 },
-    { id: 'profile', label: '个人中心', targetY: window.innerHeight * 4 },
+const NAV_ITEMS = [
+    { id: 'eco', label: '生态', path: '/eco',  },
+    { id: 'news', label: '演化', path: '/news',},
+    { id: 'forum', label: '失衡', path: '/forum', },
+    { id: 'profile', label: '重构', path: '/profile', },
   ];
 
 
