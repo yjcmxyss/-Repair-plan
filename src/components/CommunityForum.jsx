@@ -153,22 +153,27 @@ useEffect(() => {
   };
 
   // 提交发帖到后端
-  const handleTransmit = async () => {
+ const handleTransmit = async () => {
+    // 基础检查
     if (!newTitle.trim() || !newContent.trim()) {
       alert('请完整填写标题和内容');
       return;
     }
 
+    // --- 修改开始 ---
     const postData = {
-      author: user.username,
-      authorNickname: user.name,
-      authorImg: user.avatar,
-      role: user.role === 'admin' ? "管理员" : "社区成员",
       title: newTitle,
       content: newContent,
-      category: activeCategory === '全部' ? "环保科普" : activeCategory,
-      date: new Date().toISOString().split('T')[0]
+      author: user?.username || "访客",
+      authorNickname: user?.name || "匿名用户",
+      // 1. 使用 ?. (可选链) 防止 user 为 null 时报错
+      // 2. 去掉链接前后的反斜杠 \
+      authorImg: user?.avatar || "https://picsum.photos/60/60", 
+      role: user?.role === 'admin' ? "官方认证" : "成员",
+      category: "生态保护"
     };
+
+  
 
     try {
       const res = await fetch(`${API_BASE}/api/add-post`, {

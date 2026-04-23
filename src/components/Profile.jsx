@@ -20,14 +20,23 @@ const ProfileEdit = ({ user, updateUser }) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
-
-  const handleAvatar = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      updateUser({ ...user, avatar: url });
+const handleAvatar = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    // 检查文件大小 (建议限制在 2MB 以内，Base64 会让体积增大 33%)
+    if (file.size > 2 * 1024 * 1024) {
+      alert("图片太大，请选择 2MB 以内的图片");
+      return;
     }
-  };
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result; // 这就是可以存入数据库的长字符串
+      updateUser({ ...user, avatar: base64String });
+    };
+    reader.readAsDataURL(file);
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
