@@ -27,7 +27,6 @@ const CommunityForum = () => {
   const [time, setTime] = useState(new Date());
 
   // --- 新增逻辑：配置与状态 ---
-  // const API_BASE = "https://你的项目名.up.railway.app"; // 【重要】请修改为你的 Railway 地址
   const [user, setUser] = useState(null);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
@@ -69,6 +68,43 @@ const CommunityForum = () => {
     console.error("点赞失败:", err);
   }
 };
+
+const handleCommentSubmit = async (postId, content) => {
+  // 如果没登录，拦截并提醒
+  if (!user) {
+    alert("🔒 请先登录后再发表见解！");
+    navigate('/profile');
+    return;
+  }
+  
+  // 过滤空内容
+  if (!content.trim()) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/add-comment`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        postId,
+        username: user.name, // 使用登录用户的昵称
+        content: content,
+        avatar: user.avatar  // 使用登录用户的头像 (Base64)
+      })
+    });
+
+    if (res.ok) {
+      // 评论成功后，重新获取帖子列表以刷新显示
+      fetchPosts();
+    } else {
+      const data = await res.json();
+      alert(data.msg || "评论失败");
+    }
+  } catch (err) {
+    console.error("评论请求出错:", err);
+    alert("连接后端失败，请检查网络");
+  }
+};
+
   // 初始化逻辑
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
