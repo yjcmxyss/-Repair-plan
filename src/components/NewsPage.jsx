@@ -130,7 +130,7 @@ const NewsPage = () => {
 </div>
 
               {/* 特色倡议区域 */}
-              <div className="border-4 border-black bg-[#FEF85E] rounded-[3rem] p-10 md:p-16 mb-24 flex flex-col md:flex-row gap-12 relative overflow-hidden ">
+              <div className="border-4 border-black bg-[#B3F7A3] rounded-[3rem] p-10 md:p-16 mb-24 flex flex-col md:flex-row gap-12 relative overflow-hidden ">
                 <div className="flex-1 z-10">
                   <div className="flex items-center gap-2 text-black text-xs font-[1000] mb-6 tracking-[0.3em] uppercase">
                     <Star size={16} fill="black" /> FEATURED INITIATIVE
