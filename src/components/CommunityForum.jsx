@@ -185,7 +185,7 @@ const handleCommentSubmit = async (postId, content) => {
       <main className="max-w-7xl mx-auto px-6">
         {/* 公告栏 */}
         <div className="border-2 border-black rounded-2xl p-4 mb-10 flex items-center gap-4 bg-white">
-          <div className="bg-[#2e7d32] text-white px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest flex items-center gap-2">
+          <div className="bg-[#E0CB28] text-white px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest flex items-center gap-2">
             <Bell size={14} /> Notice
           </div>
           <p className="text-sm font-bold truncate">2025全球环保志愿行动正式启动，欢迎全国志愿者加入我们的保护计划！</p>
@@ -202,7 +202,7 @@ const handleCommentSubmit = async (postId, content) => {
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
                   className={`px-6 py-2 rounded-full border-2 border-black font-black text-xs uppercase transition-all
-                    ${activeCategory === cat ? 'bg-[#93ED8A] text-black' : 'bg-white text-black hover:bg-slate-100'}`}
+                    ${activeCategory === cat ? 'bg-[#FFF95E] text-black' : 'bg-white text-black hover:bg-slate-100'}`}
                 >
                   {cat}
                 </button>
@@ -321,7 +321,7 @@ const handleCommentSubmit = async (postId, content) => {
             {/* 1. 发布按钮 */}
             <button 
               onClick={handleOpenModal}
-              className="w-full bg-[#2e7d32] text-white py-5 rounded-[1.5rem] border-2 border-black font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-black transition-all"
+              className="w-full bg-[#FFF95E] text-black py-5 rounded-[1.5rem] border-2 border-black font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-white t transition-all"
             >
               <PencilLine size={20} /> 发布环保帖子
             </button>
