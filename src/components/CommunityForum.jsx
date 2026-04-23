@@ -412,7 +412,7 @@ const handleCommentSubmit = async (postId, content) => {
               <div className="bg-white p-4 border-2 border-black rounded-xl mb-4 italic font-bold text-sm leading-relaxed text-black">
                 “今天请减少使用一次性餐具，自带水杯，为地球减塑。”
               </div>
-              <button className="w-full bg-black text-white py-2 rounded-full font-black uppercase text-[10px] hover:bg-[#2e7d32] transition-all">
+              <button className="w-full bg-black text-white py-2 rounded-full font-black uppercase text-[10px] hover:bg-[#E0CB28] transition-all">
                 <CheckCircle className="inline-block mr-1" size={12}/> 我要打卡
               </button>
             </div>
@@ -455,20 +455,20 @@ const handleCommentSubmit = async (postId, content) => {
               <input 
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                placeholder="标题" 
+                placeholder="这里输入标题..." 
                 className="w-full border-2 border-black p-4 rounded-xl mb-4 font-bold outline-none focus:bg-slate-50 text-black uppercase" 
               />
               <textarea 
                 value={newContent}
                 onChange={(e) => setNewContent(e.target.value)}
-                placeholder="内容" 
+                placeholder="这里输入内容..." 
                 rows={4} 
                 className="w-full border-2 border-black p-4 rounded-xl mb-6 font-bold outline-none focus:bg-slate-50 text-black" 
               />
               
               <button 
                 onClick={handleTransmit}
-                className="w-full bg-black text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-[#FFF95E] transition-colors border-2 border-black"
+                className="w-full bg-black text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-[#E0CB28] transition-colors border-2 border-black"
               >
                 发布 ↗
               </button>
