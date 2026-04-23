@@ -1,5 +1,3 @@
-// 必须包含 https:// 协议头
-const API_BASE = "https://repair-plan-backend-production.up.railway.app";
 // @ts-nocheck
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,8 +6,10 @@ import { useNavigate } from 'react-router-dom'; // 导入路由跳转
 import { 
   Heart, MessageCircle, Share2, Eye, PencilLine, 
   Bell, Flame, Leaf, Sun, Wind, Calendar, Users, Clock, X, ChevronRight,
-  Trophy, CheckCircle 
+  Trophy, CheckCircle,ChevronLeft 
 } from 'lucide-react';
+
+const API_BASE = "https://repair-plan-backend-production.up.railway.app";
 
 // --- 原始展示数据 (作为备份) ---
 const INITIAL_POSTS = [
@@ -30,6 +30,10 @@ const CommunityForum = () => {
   const [user, setUser] = useState(null);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
+
+  const [currentPage, setCurrentPage] = useState(1); // 记录当前页码，默认第1页
+  const postsPerPage = 4; // 设置每页显示的帖子数量（你可以根据需要修改这个数字）
+  
 
   // 获取数据库帖子
   const fetchPosts = async () => {
@@ -123,6 +127,21 @@ const handleCommentSubmit = async (postId, content) => {
     return activeCategory === '全部' ? posts : posts.filter(p => p.category === activeCategory);
   }, [activeCategory, posts]);
 
+// A. 计算当前页要显示的帖子数据（切片逻辑）
+const currentDisplayedPosts = useMemo(() => {
+  const startIndex = (currentPage - 1) * postsPerPage; // 计算开始索引
+  return filteredPosts.slice(startIndex, startIndex + postsPerPage); // 截取对应的5条数据
+}, [filteredPosts, currentPage]);
+
+// B. 计算总页数
+const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+
+// C. 增加一个监听：当切换分类（如从“全部”切到“海洋”）时，重置页码为1
+useEffect(() => {
+  setCurrentPage(1);
+}, [activeCategory]);
+
+
   // 发布按钮拦截
   const handleOpenModal = () => {
     if (!user) {
@@ -211,7 +230,7 @@ const handleCommentSubmit = async (postId, content) => {
 
             {/* 帖子循环 */}
             <div className="space-y-6">
-              {filteredPosts.map(post => (
+              {currentDisplayedPosts.map(post => (
                 <motion.div 
                   layout
                   key={post.id}
@@ -313,7 +332,47 @@ const handleCommentSubmit = async (postId, content) => {
                 </motion.div>
               ))}
             </div>
+
+ {/* --- 新增：分页按钮 UI --- */}
+{totalPages > 1 && (
+  <div className="flex justify-center items-center gap-4 pt-10 pb-10">
+    {/* 上一页按钮 */}
+   {/* 上一页按钮 */}
+{/* <button 
+  disabled={currentPage === 1}
+  onClick={() => { setCurrentPage(p => p - 1); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
+  className={`p-2 border-2 border-black rounded-lg ${currentPage === 1 ? 'opacity-30' : 'hover:bg-gray-100'}`}
+>
+  <ChevronLeft size={20} />
+</button> */}
+
+{/* 页码按钮 */}
+<div className="flex gap-2">
+  {[...Array(totalPages)].map((_, i) => (
+    <button 
+      key={i}
+      onClick={() => { setCurrentPage(i + 1); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
+      className={`px-4 py-2 border-2 border-black rounded-lg font-bold ${currentPage === i + 1 ? 'bg-black text-white' : 'bg-white'}`}
+    >
+      {i + 1}
+    </button>
+  ))}
+</div>
+    {/* 下一页按钮 */}
+    {/* <button 
+      disabled={currentPage === totalPages}
+      onClick={() => { setCurrentPage(p => p + 1); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
+      className={`p-2 border-2 border-black rounded-lg ${currentPage === 1 ? 'opacity-30' : 'hover:bg-gray-100'}`}
+    >
+      <ChevronRight size={20} />
+    </button> */}
+  </div>
+)}
+
+
           </div>
+
+         
 
           {/* 右侧：侧边栏卡片 */}
           <aside className="lg:w-[360px] space-y-6">
