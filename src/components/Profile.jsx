@@ -241,6 +241,7 @@ const AdminPanel = ({ users, posts, setPosts, setUsers, fetchPosts }) => {
 };
 
 // 数据统计图表
+// Profile.jsx 中的 Charts 组件修复版
 const Charts = ({ users }) => {
   const [loginStats, setLoginStats] = useState([]);
   const [dateLabels, setDateLabels] = useState([]);
@@ -256,9 +257,26 @@ const Charts = ({ users }) => {
       labels.push(`${m}/${day}`);
     }
     setDateLabels(labels);
+    // 从本地存储读取七日登录数据，如果没有则初始化为全0
     const stored = JSON.parse(localStorage.getItem('login_stats') || '[0,0,0,0,0,0,0]');
     setLoginStats(stored);
   }, []);
+
+  // 新增：七日登录折线图数据配置
+  const loginData = {
+    labels: dateLabels,
+    datasets: [{
+      label: '近七日用户登录次数',
+      data: loginStats,
+      fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.2)', // 靛青色背景
+      borderColor: '#4f46e5',
+      borderWidth: 3,
+      tension: 0.4, // 让线条变圆滑
+      pointBackgroundColor: '#fff',
+      pointBorderWidth: 2,
+    }],
+  };
 
   const genderData = {
     labels: ['男', '女', '保密'],
@@ -277,14 +295,27 @@ const Charts = ({ users }) => {
 
   const chartOptions = {
     responsive: true,
-    plugins: { legend: { position: 'top' } },
+    maintainAspectRatio: false, // 允许自定义高度
+    plugins: { 
+      legend: { position: 'top', labels: { font: { weight: 'bold' } } } 
+    },
   };
 
   return (
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white p-4 border-2 border-black rounded-lg">
-          <h3 className="font-bold text-lg mb-3">性别统计饼图</h3>
-          <Pie data={genderData} options={chartOptions} />
+        {/* 修复：添加折线图显示区域 */}
+        <div className="bg-white p-6 border-2 border-black rounded-lg shadow-sm">
+          <h3 className="font-black text-lg mb-4 uppercase tracking-tighter">📈 七日活跃统计</h3>
+          <div className="h-[300px]">
+            <Line data={loginData} options={chartOptions} />
+          </div>
+        </div>
+
+        <div className="bg-white p-6 border-2 border-black rounded-lg shadow-sm">
+          <h3 className="font-black text-lg mb-4 uppercase tracking-tighter">🚻 性别比例分布</h3>
+          <div className="h-[300px]">
+            <Pie data={genderData} options={chartOptions} />
+          </div>
         </div>
       </div>
   );
