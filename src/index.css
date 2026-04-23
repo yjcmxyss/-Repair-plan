@@ -1,0 +1,28 @@
+@import "tailwindcss";
+body { margin: 0; padding: 0;  }
+/* src/index.css */
+@font-face {
+  font-family: 'MyBrandFont';
+  /* 注意：这里的路径是相对于当前 CSS 文件的 */
+  src: url('./assets/fonts/NotoSansSC-VariableFont_wght.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  font-family: 'MyBrandFont', system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+/* 优化大字体的描边质感 */
+span {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+   paint-order: stroke fill;
+}
+
+/* 隐藏滚动条，保持页面纯净 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
