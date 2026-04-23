@@ -450,27 +450,27 @@ const handleCommentSubmit = async (postId, content) => {
               className="bg-white border-4 border-black w-full max-w-xl rounded-[2.5rem] p-10 relative z-10"
             >
               <button onClick={() => setIsPostModalOpen(false)} className="absolute top-6 right-6 text-black"><X /></button>
-              <h2 className="text-3xl font-[1000] uppercase italic tracking-tighter mb-6 text-black">Create Log</h2>
+              <h2 className="text-3xl font-[1000] uppercase italic tracking-tighter mb-6 text-black">创建帖子</h2>
               
               <input 
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                placeholder="ENTRY TITLE" 
+                placeholder="标题" 
                 className="w-full border-2 border-black p-4 rounded-xl mb-4 font-bold outline-none focus:bg-slate-50 text-black uppercase" 
               />
               <textarea 
                 value={newContent}
                 onChange={(e) => setNewContent(e.target.value)}
-                placeholder="SHARE YOUR ECOLOGICAL INSIGHTS..." 
+                placeholder="内容" 
                 rows={4} 
                 className="w-full border-2 border-black p-4 rounded-xl mb-6 font-bold outline-none focus:bg-slate-50 text-black" 
               />
               
               <button 
                 onClick={handleTransmit}
-                className="w-full bg-black text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-[#2e7d32] transition-colors border-2 border-black"
+                className="w-full bg-black text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-[#FFF95E] transition-colors border-2 border-black"
               >
-                Transmit Data ↗
+                发布 ↗
               </button>
             </motion.div>
           </div>
