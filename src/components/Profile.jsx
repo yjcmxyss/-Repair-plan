@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // 移除了 Link
+import { useNavigate } from 'react-router-dom'; 
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title } from 'chart.js';
 import { Pie, Line } from 'react-chartjs-2';
 
@@ -32,7 +32,7 @@ const ProfileEdit = ({ user, updateUser }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await fetch('http://localhost:3001/api/update-profile', {
+      await fetch('https://repair-plan-backend-production.up.railway.app/api/update-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -96,7 +96,7 @@ const MyPosts = ({ user, posts, setPosts, fetchPosts }) => {
   const addComment = async (postId, content) => {
     if (!content.trim()) return;
     try {
-      await fetch('http://localhost:3001/api/add-comment', {
+      await fetch('https://repair-plan-backend-production.up.railway.app/api/add-comment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ postId, content, username: user.username })
@@ -107,7 +107,7 @@ const MyPosts = ({ user, posts, setPosts, fetchPosts }) => {
 
   const like = async (postId) => {
     try {
-      await fetch('http://localhost:3001/api/like-post', {
+      await fetch('https://repair-plan-backend-production.up.railway.app/api/like-post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ postId })
@@ -160,7 +160,7 @@ const MyPosts = ({ user, posts, setPosts, fetchPosts }) => {
 const AdminPanel = ({ users, posts, setPosts, setUsers, fetchPosts }) => {
   const fetchUsers = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/users');
+      const res = await fetch('https://repair-plan-backend-production.up.railway.app/api/users');
       const data = await res.json();
       if (data.code === 0) setUsers(data.data);
     } catch (err) { }
@@ -172,7 +172,7 @@ const AdminPanel = ({ users, posts, setPosts, setUsers, fetchPosts }) => {
 
   const banUser = async (id, status) => {
     try {
-      await fetch('http://localhost:3001/api/ban-user', {
+      await fetch('https://repair-plan-backend-production.up.railway.app/api/ban-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status })
@@ -183,7 +183,7 @@ const AdminPanel = ({ users, posts, setPosts, setUsers, fetchPosts }) => {
 
   const audit = async (id, status) => {
     try {
-      await fetch('http://localhost:3001/api/audit-post', {
+      await fetch('https://repair-plan-backend-production.up.railway.app/api/audit-post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status })
@@ -307,7 +307,7 @@ const Profile = () => {
 
   const fetchPosts = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/posts');
+      const res = await fetch('https://repair-plan-backend-production.up.railway.app/api/posts');
       const data = await res.json();
       if (data.code === 0) setPosts(data.data);
     } catch (err) { }
@@ -322,7 +322,7 @@ const Profile = () => {
 
   const handleLogin = async (username, password) => {
     try {
-      const res = await fetch('http://localhost:3001/api/login', {
+      const res = await fetch('https://repair-plan-backend-production.up.railway.app/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -420,7 +420,7 @@ const Profile = () => {
                               }
 
                               try {
-                                const res = await fetch('http://localhost:3001/api/register', {
+                                const res = await fetch('https://repair-plan-backend-production.up.railway.app/api/register', {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ username, password })

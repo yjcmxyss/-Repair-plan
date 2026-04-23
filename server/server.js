@@ -22,6 +22,24 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
+// 新增帖子接口
+app.post('/api/add-post', async (req, res) => {
+    try {
+        const { title, content, author, authorNickname, authorImg, role, category } = req.body;
+        
+        // 执行插入语句
+        const [result] = await db.query(
+            'INSERT INTO posts (title, content, author, authorNickname, authorImg, role, category, comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [title, content, author, authorNickname, authorImg, role, category, JSON.stringify([])]
+        );
+        
+        res.json({ code: 0, msg: '发布成功', postId: result.insertId });
+    } catch (err) {
+        console.error("发布帖子数据库报错:", err);
+        res.status(500).json({ code: 1, msg: '数据库写入失败' });
+    }
+});
+
 // 登录接口
 app.post('/api/login', async (req, res) => {
     try {
@@ -71,6 +89,7 @@ app.post('/api/update-profile', async (req, res) => {
 });
 
 // 初始化帖子表 (如果不存在则创建)
+// 初始化帖子表 (增加了前端需要的字段)
 (async () => {
     try {
         await db.query(`
@@ -79,11 +98,17 @@ app.post('/api/update-profile', async (req, res) => {
                 title VARCHAR(255),
                 content TEXT,
                 author VARCHAR(50),
+                authorNickname VARCHAR(50),
+                authorImg TEXT,
+                role VARCHAR(50),
+                category VARCHAR(50),
                 status ENUM('pending','approved','rejected') DEFAULT 'pending',
                 likes INT DEFAULT 0,
-                comments JSON
+                comments JSON,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        console.log("帖子表已就绪");
     } catch (err) {
         console.error("创建表失败:", err);
     }
@@ -105,18 +130,43 @@ app.post('/api/audit-post', async (req, res) => {
 // 帖子点赞
 app.post('/api/like-post', async (req, res) => {
     const { postId } = req.body;
-    await db.query('UPDATE posts SET likes = likes + 1 WHERE id=?', [postId]);
-    res.json({ code: 0 });
+    try {
+        // 让 likes 字段自增 1
+        await db.query('UPDATE posts SET likes = likes + 1 WHERE id = ?', [postId]);
+        res.json({ code: 0, msg: "点赞成功" });
+    } catch (err) {
+        res.status(500).json({ code: 1, msg: "点赞失败" });
+    }
 });
 
 // 添加评论
 app.post('/api/add-comment', async (req, res) => {
-    const { postId, username, content } = req.body;
-    const [post] = await db.query('SELECT comments FROM posts WHERE id=?', [postId]);
-    const comments = JSON.parse(post[0].comments || '[]');
-    comments.push({ user: username, content });
-    await db.query('UPDATE posts SET comments=? WHERE id=?', [JSON.stringify(comments), postId]);
-    res.json({ code: 0 });
+    const { postId, username, content, avatar } = req.body;
+    try {
+        // 1. 先查出旧的评论数组
+        const [rows] = await db.query('SELECT comments FROM posts WHERE id = ?', [postId]);
+        let comments = rows[0].comments || [];
+        
+        // 如果数据库存的是字符串，需要解析（Railway JSON字段通常自动解析）
+        if (typeof comments === 'string') comments = JSON.parse(comments);
+
+        // 2. 推进去一条新评论
+        const newComment = {
+            username,
+            avatar: avatar || "https://picsum.photos/60/60",
+            content,
+            date: new Date().toLocaleString()
+        };
+        comments.push(newComment);
+
+        // 3. 写回数据库
+        await db.query('UPDATE posts SET comments = ? WHERE id = ?', [JSON.stringify(comments), postId]);
+        
+        res.json({ code: 0, data: newComment });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ code: 1, msg: "评论失败" });
+    }
 });
 
 // 启动监听

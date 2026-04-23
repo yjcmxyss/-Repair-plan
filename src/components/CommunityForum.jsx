@@ -1,6 +1,9 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
+// 必须包含 https:// 协议头
+const API_BASE = "https://repair-plan-backend-production.up.railway.app";
+// @ts-nocheck
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom'; // 导入路由跳转
 
 import { 
   Heart, MessageCircle, Share2, Eye, PencilLine, 
@@ -8,7 +11,7 @@ import {
   Trophy, CheckCircle 
 } from 'lucide-react';
 
-// --- 原始帖子数据 ---
+// --- 原始展示数据 (作为备份) ---
 const INITIAL_POSTS = [
   { id: "p1_1", author: "气候行动组", authorImg: "https://picsum.photos/id/1039/60/60", date: "2025-12-20", role: "官方认证", title: "2025全球碳中和目标进展", content: "全球变暖导致极端天气频发，各国加速能源转型。最新报告显示可再生能源占比创新高。", images: ["https://picsum.photos/id/1039/300/200"], tags: ["气候行动"], likes: 528, comments: 142, category: "气候行动" },
   { id: "p1_4", author: "森林守护队", authorImg: "https://picsum.photos/id/1062/60/60", date: "2025-12-17", role: "官方项目组", title: "热带雨林危机：每分钟消失3个足球场", content: "非法砍伐严重，我们需要立即行动守护地球之肺。", images: [], tags: ["森林保护"], likes: 689, comments: 211, category: "森林保护" },
@@ -17,14 +20,65 @@ const INITIAL_POSTS = [
 ];
 
 const CommunityForum = () => {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState(INITIAL_POSTS);
   const [activeCategory, setActiveCategory] = useState('全部');
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [time, setTime] = useState(new Date());
 
-  // 时钟逻辑
+  // --- 新增逻辑：配置与状态 ---
+  // const API_BASE = "https://你的项目名.up.railway.app"; // 【重要】请修改为你的 Railway 地址
+  const [user, setUser] = useState(null);
+  const [newTitle, setNewTitle] = useState('');
+  const [newContent, setNewContent] = useState('');
+
+  // 获取数据库帖子
+  const fetchPosts = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/posts`);
+      const data = await res.json();
+      if (data.code === 0) setPosts(data.data.reverse());
+    } catch (err) { console.error("获取数据失败"); }
+  };
+
+ const handleLike = async (postId) => {
+  // 1. 先检查本地存储，看这个用户是否给这个帖子点过赞
+  const hasLiked = localStorage.getItem(`liked_post_${postId}`);
+  if (hasLiked) {
+    alert("你已经点过赞啦！");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/like-post`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ postId })
+    });
+
+    if (res.ok) {
+      // 2. 点赞成功后，在本地存入标记
+      localStorage.setItem(`liked_post_${postId}`, 'true');
+      
+      // 3. 更新 UI
+      setPosts(prev => prev.map(p => 
+        p.id === postId ? { ...p, likes: (p.likes || 0) + 1, isLiked: true } : p
+      ));
+    }
+  } catch (err) {
+    console.error("点赞失败:", err);
+  }
+};
+  // 初始化逻辑
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
+    
+    // 获取登录状态
+    const localUser = localStorage.getItem('user');
+    if (localUser) setUser(JSON.parse(localUser));
+
+    fetchPosts(); // 从 Railway 拉取数据
+
     return () => clearInterval(timer);
   }, []);
 
@@ -32,6 +86,51 @@ const CommunityForum = () => {
   const filteredPosts = useMemo(() => {
     return activeCategory === '全部' ? posts : posts.filter(p => p.category === activeCategory);
   }, [activeCategory, posts]);
+
+  // 发布按钮拦截
+  const handleOpenModal = () => {
+    if (!user) {
+      alert('🔒 请先登录后再发布内容！');
+      navigate('/profile');
+      return;
+    }
+    setIsPostModalOpen(true);
+  };
+
+  // 提交发帖到后端
+  const handleTransmit = async () => {
+    if (!newTitle.trim() || !newContent.trim()) {
+      alert('请完整填写标题和内容');
+      return;
+    }
+
+    const postData = {
+      author: user.username,
+      authorNickname: user.name,
+      authorImg: user.avatar,
+      role: user.role === 'admin' ? "管理员" : "社区成员",
+      title: newTitle,
+      content: newContent,
+      category: activeCategory === '全部' ? "环保科普" : activeCategory,
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/api/add-post`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postData)
+      });
+      const data = await res.json();
+      if (data.code === 0) {
+        alert('✅ 发布成功，已永久保存！');
+        setIsPostModalOpen(false);
+        setNewTitle('');
+        setNewContent('');
+        fetchPosts(); // 刷新列表
+      }
+    } catch (err) { alert('发布失败，请检查 Railway 后端连接'); }
+  };
 
   return (
     <div className="min-h-screen bg-white text-black pt-24 pb-20 font-sans">
@@ -83,30 +182,98 @@ const CommunityForum = () => {
                   className="bg-white border-2 border-black rounded-[2rem] p-8 transition-all hover:translate-y-[-2px]"
                 >
                   <div className="flex items-center gap-4 mb-6">
-                    <img src={post.authorImg} className="w-12 h-12 rounded-full border-2 border-black object-cover" alt=""/>
+                    <img src={post.authorImg || post.authorImg} className="w-12 h-12 rounded-full border-2 border-black object-cover" alt=""/>
                     <div>
-                      <h4 className="font-black text-base">{post.author}</h4>
+                      <h4 className="font-black text-base">{post.authorNickname || post.author}</h4>
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{post.date} • {post.role}</div>
                     </div>
                   </div>
                   <h3 className="text-2xl font-[1000] italic uppercase tracking-tight mb-4">{post.title}</h3>
                   <p className="text-slate-600 font-medium leading-relaxed mb-6">{post.content}</p>
                   
-                  {post.images.length > 0 && (
+                  {post.images && post.images.length > 0 && (
                     <div className="rounded-2xl overflow-hidden border-2 border-black mb-6">
                       <img src={post.images[0]} className="w-full h-64 object-cover transition-all duration-700" alt=""/>
                     </div>
                   )}
 
-                  <div className="flex items-center gap-6 border-t-2 border-black/5 pt-6 font-black text-xs">
-                    <button className="flex items-center gap-2 hover:text-red-500 transition-colors">
-                      <Heart size={16} /> {post.likes}
-                    </button>
-                    <button className="flex items-center gap-2 hover:text-blue-500 transition-colors">
-                      <MessageCircle size={16} /> {post.comments}
-                    </button>
-                    <button className="ml-auto opacity-20 hover:opacity-100 uppercase tracking-widest italic">Details ↗</button>
-                  </div>
+                 <div className="flex items-center gap-6">
+  {/* 点赞按钮 */}
+  <button 
+    onClick={() => handleLike(post.id)}
+    className="flex items-center gap-2 text-slate-500 hover:text-[#2e7d32] transition-colors group"
+  >
+    <div className="p-2 rounded-full group-hover:bg-green-50">
+      <Heart size={20} className={post.likes > 0 ? "fill-red-500 text-red-500" : ""} />
+    </div>
+    <span className="font-bold">{post.likes || 0}</span>
+  </button>
+
+  {/* 评论按钮 */}
+  <button className="flex items-center gap-2 text-slate-500 hover:text-blue-500 transition-colors group">
+    <div className="p-2 rounded-full group-hover:bg-blue-50">
+      <MessageCircle size={20} />
+    </div>
+    {/* 这里判断 comments 是否存在并解析 */}
+    <span className="font-bold">
+      {post.comments ? (typeof post.comments === 'string' ? JSON.parse(post.comments).length : post.comments.length) : 0}
+    </span>
+  </button>
+</div>
+<div className="mt-4 pt-4 border-t-2 border-slate-100">
+  <input 
+    type="text"
+    placeholder="发表你的见解 (回车发送)..."
+    className="w-full bg-slate-50 border-2 border-slate-200 p-3 rounded-xl font-bold text-sm outline-none focus:border-black transition-all"
+    onKeyDown={(e) => {
+      if (e.key === 'Enter') {
+        handleCommentSubmit(post.id, e.target.value);
+        e.target.value = ""; // 发送后清空
+      }
+    }}
+  />
+</div>
+<div className="mt-6 space-y-4">
+  {(() => {
+    try {
+      // 1. 解析评论数据（兼容字符串和对象格式）
+      const commentList = typeof post.comments === 'string' 
+        ? JSON.parse(post.comments) 
+        : (post.comments || []);
+
+      return commentList.map((comment, idx) => (
+        <motion.div 
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          key={idx} 
+          className="flex gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100"
+        >
+          {/* 评论者头像 */}
+          <img 
+            src={comment.avatar || "https://picsum.photos/60/60"} 
+            className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+          />
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-1">
+              <span className="font-black text-xs uppercase tracking-wider text-slate-400">
+                {comment.username}
+              </span>
+              <span className="text-[10px] text-slate-300 font-bold">
+                {comment.date}
+              </span>
+            </div>
+            <p className="text-sm font-bold text-slate-700 leading-relaxed">
+              {comment.content}
+            </p>
+          </div>
+        </motion.div>
+      ));
+    } catch (e) {
+      console.error("解析评论失败", e);
+      return null;
+    }
+  })()}
+</div>
                 </motion.div>
               ))}
             </div>
@@ -117,7 +284,7 @@ const CommunityForum = () => {
             
             {/* 1. 发布按钮 */}
             <button 
-              onClick={() => setIsPostModalOpen(true)}
+              onClick={handleOpenModal}
               className="w-full bg-[#2e7d32] text-white py-5 rounded-[1.5rem] border-2 border-black font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-black transition-all"
             >
               <PencilLine size={20} /> 发布环保帖子
@@ -165,7 +332,7 @@ const CommunityForum = () => {
             <div className="bg-white border-2 border-black rounded-[2rem] p-6 text-black">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-[10px] font-black uppercase opacity-40 text-black">Local Climate</span>
-                <Sun size={20} className="text-orange-400" />
+                < Sun size={20} className="text-orange-400" />
               </div>
               <div className="flex items-end gap-2 mb-4">
                 <span className="text-4xl font-[1000] italic leading-none">26°C</span>
@@ -248,9 +415,25 @@ const CommunityForum = () => {
             >
               <button onClick={() => setIsPostModalOpen(false)} className="absolute top-6 right-6 text-black"><X /></button>
               <h2 className="text-3xl font-[1000] uppercase italic tracking-tighter mb-6 text-black">Create Log</h2>
-              <input placeholder="ENTRY TITLE" className="w-full border-2 border-black p-4 rounded-xl mb-4 font-bold outline-none focus:bg-slate-50 text-black" />
-              <textarea placeholder="SHARE YOUR ECOLOGICAL INSIGHTS..." rows={4} className="w-full border-2 border-black p-4 rounded-xl mb-6 font-bold outline-none focus:bg-slate-50 text-black" />
-              <button className="w-full bg-black text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-[#2e7d32] transition-colors border-2 border-black">
+              
+              <input 
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="ENTRY TITLE" 
+                className="w-full border-2 border-black p-4 rounded-xl mb-4 font-bold outline-none focus:bg-slate-50 text-black uppercase" 
+              />
+              <textarea 
+                value={newContent}
+                onChange={(e) => setNewContent(e.target.value)}
+                placeholder="SHARE YOUR ECOLOGICAL INSIGHTS..." 
+                rows={4} 
+                className="w-full border-2 border-black p-4 rounded-xl mb-6 font-bold outline-none focus:bg-slate-50 text-black" 
+              />
+              
+              <button 
+                onClick={handleTransmit}
+                className="w-full bg-black text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-[#2e7d32] transition-colors border-2 border-black"
+              >
                 Transmit Data ↗
               </button>
             </motion.div>
