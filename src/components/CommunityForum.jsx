@@ -279,7 +279,7 @@ useEffect(() => {
           <img 
             key={idx} 
             src={img} 
-            className="rounded-2xl border-2 border-black w-full h-48 object-cover shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] transition-all" 
+            className="rounded-2xl border-2 border-black w-full h-48 object-cover  hover:translate-y-[-2px] transition-all" 
             alt="post-img"
           />
         ));
