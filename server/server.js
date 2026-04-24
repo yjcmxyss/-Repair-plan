@@ -23,20 +23,21 @@ const db = mysql.createPool({
 });
 
 // 新增帖子接口
+// server.js 约 26 行
 app.post('/api/add-post', async (req, res) => {
     try {
-        const { title, content, author, authorNickname, authorImg, role, category } = req.body;
+        const { title, content, author, authorNickname, authorImg, role, category, images } = req.body;
         
-        // 执行插入语句
         const [result] = await db.query(
-            'INSERT INTO posts (title, content, author, authorNickname, authorImg, role, category, comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [title, content, author, authorNickname, authorImg, role, category, JSON.stringify([])]
+            // 增加 images 字段
+            'INSERT INTO posts (title, content, author, authorNickname, authorImg, role, category, comments, images) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [title, content, author, authorNickname, authorImg, role, category, JSON.stringify([]), JSON.stringify(images || [])]
         );
         
-        res.json({ code: 0, msg: '发布成功', postId: result.insertId });
+        res.json({ code: 0, msg: "发布成功" });
     } catch (err) {
-        console.error("发布帖子数据库报错:", err);
-        res.status(500).json({ code: 1, msg: '数据库写入失败' });
+        console.error(err);
+        res.status(500).json({ code: 1, msg: "服务器错误" });
     }
 });
 

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'; // 导入路由跳转
 import { 
   Heart, MessageCircle, Share2, Eye, PencilLine, 
   Bell, Flame, Leaf, Sun, Wind, Calendar, Users, Clock, X, ChevronRight,
-  Trophy, CheckCircle,ChevronLeft 
+  Trophy, CheckCircle,ChevronLeft,Plus 
 } from 'lucide-react';
 
 const API_BASE = "https://repair-plan-backend-production.up.railway.app";
@@ -32,7 +32,23 @@ const CommunityForum = () => {
   const [newContent, setNewContent] = useState('');
 
   const [currentPage, setCurrentPage] = useState(1); // 记录当前页码，默认第1页
-  const postsPerPage = 4; // 设置每页显示的帖子数量（你可以根据需要修改这个数字）
+  const postsPerPage = 4; // 设置每页显示的帖子数量
+  const [postImages, setPostImages] = useState([]); // 存储选中的图片 Base64 数组
+
+  const handlePostImages = (e) => {
+  const files = Array.from(e.target.files);
+  files.forEach(file => {
+    if (file.size > 2 * 1024 * 1024) {
+      alert("单张图片不能超过 2MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPostImages(prev => [...prev, reader.result]);
+    };
+    reader.readAsDataURL(file);
+  });
+};
   
 
   // 获取数据库帖子
@@ -170,7 +186,8 @@ useEffect(() => {
       // 2. 去掉链接前后的反斜杠 \
       authorImg: user?.avatar || "https://picsum.photos/60/60", 
       role: user?.role === 'admin' ? "官方认证" : "成员",
-      category: "生态保护"
+      category: "生态保护",
+      images: postImages
     };
 
   
@@ -251,12 +268,31 @@ useEffect(() => {
                   <h3 className="text-2xl font-[1000] italic uppercase tracking-tight mb-4">{post.title}</h3>
                   <p className="text-slate-600 font-medium leading-relaxed mb-6">{post.content}</p>
                   
-                  {post.images && post.images.length > 0 && (
-                    <div className="rounded-2xl overflow-hidden border-2 border-black mb-6">
-                      <img src={post.images[0]} className="w-full h-64 object-cover transition-all duration-700" alt=""/>
-                    </div>
-                  )}
-
+                  {/* 新代码：支持显示多张图片 */}
+{post.images && (
+  <div className="grid grid-cols-2 gap-3 mb-6">
+    {(() => {
+      try {
+        // 解析数据库存的 JSON 字符串或数组
+        const imgs = typeof post.images === 'string' ? JSON.parse(post.images) : post.images;
+        return imgs.map((img, idx) => (
+          <img 
+            key={idx} 
+            src={img} 
+            className="rounded-2xl border-2 border-black w-full h-48 object-cover shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] transition-all" 
+            alt="post-img"
+          />
+        ));
+      } catch (e) {
+        // 如果不是 JSON 格式（比如旧数据是单张图片地址），则降级处理
+        if (typeof post.images === 'string' && post.images.startsWith('http')) {
+           return <img src={post.images} className="rounded-2xl border-2 border-black w-full h-48 object-cover shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] col-span-2" />;
+        }
+        return null;
+      }
+    })()}
+  </div>
+)}
                  <div className="flex items-center gap-6">
   {/* 点赞按钮 */}
   <button 
@@ -529,6 +565,19 @@ useEffect(() => {
                 rows={4} 
                 className="w-full border-2 border-black p-4 rounded-xl mb-6 font-bold outline-none focus:bg-slate-50 text-black" 
               />
+
+              <div className="mb-6">
+  <label className="block font-black uppercase mb-2">📸 添加图片 (最多3张)</label>
+  <input type="file" multiple accept="image/*" onChange={handlePostImages} className="hidden" id="post-upload" />
+  <div className="flex gap-2">
+    <label htmlFor="post-upload" className="w-20 h-20 border-2 border-dashed border-black flex items-center justify-center cursor-pointer hover:bg-gray-50">
+      <Plus size={32} />
+    </label>
+    {postImages.map((src, i) => (
+      <img key={i} src={src} className="w-20 h-20 object-cover border-2 border-black" />
+    ))}
+  </div>
+</div>
               
               <button 
                 onClick={handleTransmit}
