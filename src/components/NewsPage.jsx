@@ -17,6 +17,8 @@ const NEWS_LIST = [
   { id: "5.1", title: "可完全替代塑料！植物基纤维新型环保材料实现工业化量产", date: "2026-06-01", category: "绿色科技", source: "科技日报", img: "news/2.3.jpg", wide: false, desc: "以农作物秸秆为原料，实现从农田到餐桌的零污染循环。" },
 ];
 
+
+
 const VIDEO_SLIDES = [
   { id: 1, title: "冰川消融 · 临界警报", video: "news/lunbo1.mp4" },
   { id: 2, title: "厄尔尼诺 · 极端天气常态化", video: "news/lunbo2.mp4" },
@@ -26,7 +28,7 @@ const VIDEO_SLIDES = [
 const NewsPage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   
-  // 新增状态：存储当前选中的新闻。如果为 null 则显示列表。
+
   const [selectedNews, setSelectedNews] = useState(null);
 
   return (
@@ -82,20 +84,20 @@ const NewsPage = () => {
                 </div>
               </div>
 
-              {/* 新闻卡片网格 */}
+              
              {/* 新闻网格 */}
 <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-24 grid-flow-row-dense">
   {NEWS_LIST.map((news) => (
     <motion.div 
       key={news.id} 
       whileHover={{ y: -8 }} 
-      // 确保外层有 group 类，用于触发子元素的 hover 效果
+
       className={`border-2 border-black bg-white flex flex-col group ${news.wide ? 'md:col-span-2' : ''}`}
     >
       {/* 图片部分 */}
       <div 
         className="h-72 border-b-2 border-black overflow-hidden relative cursor-pointer"
-        onClick={() => setSelectedNews(news)} // 图片也可以点击跳转
+        onClick={() => setSelectedNews(news)} 
       >
         <img src={news.img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
         <div className="absolute top-4 left-4 bg-black text-white px-3 py-1 text-[10px] font-black uppercase tracking-tighter">{news.category}</div>

@@ -154,7 +154,7 @@ const EcoIssues = () => {
       {/* 页脚 */}
       <footer className="bg-white border-t-4 border-black py-16 px-12 flex flex-col md:flex-row justify-between items-center gap-8">
          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white font-black italic text-xl">E</div>
+          
             <span className="text-2xl font-[1000] uppercase tracking-tighter italic">修复计划</span>
          </div>
          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">© 2026 Ecological Guardian Platform | Data Verified</p>
