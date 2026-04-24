@@ -7,7 +7,9 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
-app.use(express.json());
+// 允许接收最大 50MB 的 JSON 数据（发多张 Base64 图片必备）
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // 【只保留这一个 db 声明】
 // 这里的变量名必须对应 Railway 面板里的 Variables
@@ -100,12 +102,14 @@ app.post('/api/update-profile', async (req, res) => {
                 content TEXT,
                 author VARCHAR(50),
                 authorNickname VARCHAR(50),
-                authorImg TEXT,
+                authorImg LONGTEXT,
                 role VARCHAR(50),
                 category VARCHAR(50),
                 status ENUM('pending','approved','rejected') DEFAULT 'pending',
                 likes INT DEFAULT 0,
                 comments JSON,
+                images LONGTEXT,                   -- 新增：存帖子图片数组
+                is_top TINYINT DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);

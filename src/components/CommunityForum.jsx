@@ -35,6 +35,8 @@ const CommunityForum = () => {
   const postsPerPage = 4; // 设置每页显示的帖子数量
   const [postImages, setPostImages] = useState([]); // 存储选中的图片 Base64 数组
 
+  const [newCategory, setNewCategory] = useState('环保科普'); // 默认分类
+
   const handlePostImages = (e) => {
   const files = Array.from(e.target.files);
   files.forEach(file => {
@@ -186,7 +188,7 @@ useEffect(() => {
       // 2. 去掉链接前后的反斜杠 \
       authorImg: user?.avatar || "https://picsum.photos/60/60", 
       role: user?.role === 'admin' ? "官方认证" : "成员",
-      category: "生态保护",
+      category: newCategory,
       images: postImages
     };
 
@@ -565,6 +567,27 @@ useEffect(() => {
                 rows={4} 
                 className="w-full border-2 border-black p-4 rounded-xl mb-6 font-bold outline-none focus:bg-slate-50 text-black" 
               />
+
+              <div className="mb-6">
+  <label className="block font-black uppercase mb-2 text-xs tracking-widest text-black">📌 选择分类</label>
+  <div className="relative">
+    <select 
+      value={newCategory}
+      onChange={(e) => setNewCategory(e.target.value)}
+      className="w-full border-2 border-black p-4 rounded-xl font-bold outline-none bg-white text-black appearance-none cursor-pointer focus:bg-slate-50"
+    >
+      <option value="气候行动">气候行动</option>
+      <option value="森林保护">森林保护</option>
+      <option value="海洋保护">海洋保护</option>
+      <option value="野生动物">野生动物</option>
+      <option value="环保科普">环保科普</option>
+    </select>
+    {/* 装饰用的小箭头，让它看起来更像下拉框 */}
+    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+      <ChevronRight size={20} className="rotate-90" />
+    </div>
+  </div>
+</div>
 
               <div className="mb-6">
   <label className="block font-black uppercase mb-2">📸 添加图片 (最多3张)</label>
